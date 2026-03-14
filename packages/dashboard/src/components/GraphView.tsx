@@ -13,11 +13,9 @@ import "@xyflow/react/dist/style.css";
 import CustomNode from "./CustomNode";
 import type { CustomFlowNode } from "./CustomNode";
 import { useDashboardStore } from "../store";
-import { applyDagreLayout } from "../utils/layout";
+import { applyDagreLayout, NODE_WIDTH, NODE_HEIGHT } from "../utils/layout";
 import { getLayerColor, getLayerBorderColor } from "./LayerLegend";
 
-const NODE_WIDTH = 280;
-const NODE_HEIGHT = 120;
 const LAYER_PADDING = 40;
 
 const nodeTypes = { custom: CustomNode };
