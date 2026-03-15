@@ -70,6 +70,12 @@ importers:
       '@xyflow/react':
         specifier: ^12.0.0
         version: 12.10.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      devlop:
+        specifier: ^1.1.0
+        version: 1.1.0
+      hast-util-to-jsx-runtime:
+        specifier: ^2.3.6
+        version: 2.3.6
       react:
         specifier: ^19.0.0
         version: 19.2.4
