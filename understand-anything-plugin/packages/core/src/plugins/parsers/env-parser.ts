@@ -1,5 +1,10 @@
 import type { AnalyzerPlugin, StructuralAnalysis, DefinitionInfo } from "../../types.js";
 
+/**
+ * Parses .env files to extract environment variable definitions.
+ * Handles KEY=value syntax, skipping comments and empty lines.
+ * Does not handle `export VAR=value` syntax or multi-line values.
+ */
 export class EnvParser implements AnalyzerPlugin {
   name = "env-parser";
   languages = ["env"];

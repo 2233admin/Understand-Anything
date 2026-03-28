@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { KnowledgeGraph, GraphNode, GraphEdge, EdgeType, StructuralAnalysis, AnalyzerPlugin, ReferenceResolution } from "./types.js";
+import type { KnowledgeGraph, GraphNode, GraphEdge, EdgeType, NodeType, StructuralAnalysis, AnalyzerPlugin, ReferenceResolution } from "./types.js";
 
 describe("KnowledgeGraph types", () => {
   it("should create a valid empty KnowledgeGraph", () => {
@@ -117,13 +117,16 @@ describe("KnowledgeGraph types", () => {
 });
 
 describe("Extended types", () => {
-  it("accepts all 13 node types", () => {
-    const nodeTypes: GraphNode["type"][] = [
+  it("accepts all 13 node types via NodeType alias", () => {
+    const nodeTypes: NodeType[] = [
       "file", "function", "class", "module", "concept",
       "config", "document", "service", "table", "endpoint",
       "pipeline", "schema", "resource",
     ];
     expect(nodeTypes).toHaveLength(13);
+    // NodeType and GraphNode["type"] should be interchangeable
+    const check: GraphNode["type"] = nodeTypes[0];
+    expect(check).toBe("file");
   });
 
   it("accepts all 26 edge types", () => {
@@ -144,7 +147,7 @@ describe("Extended types", () => {
       functions: [], classes: [], imports: [], exports: [],
       sections: [{ name: "Introduction", level: 1, lineRange: [1, 10] }],
       definitions: [{ name: "users", kind: "table", lineRange: [1, 20], fields: ["id", "name"] }],
-      services: [{ name: "web", image: "node:22", ports: [3000] }],
+      services: [{ name: "web", image: "node:22", ports: [3000], lineRange: [1, 5] }],
       endpoints: [{ method: "GET", path: "/api/users", lineRange: [5, 15] }],
       steps: [{ name: "build", lineRange: [1, 5] }],
       resources: [{ name: "aws_s3_bucket.main", kind: "aws_s3_bucket", lineRange: [1, 10] }],
@@ -152,9 +155,17 @@ describe("Extended types", () => {
     expect(analysis.sections).toHaveLength(1);
     expect(analysis.definitions).toHaveLength(1);
     expect(analysis.services).toHaveLength(1);
+    expect(analysis.services![0].lineRange).toEqual([1, 5]);
     expect(analysis.endpoints).toHaveLength(1);
     expect(analysis.steps).toHaveLength(1);
     expect(analysis.resources).toHaveLength(1);
+  });
+
+  it("ServiceInfo.lineRange is optional for backward compat", () => {
+    const svcWithout: import("./types.js").ServiceInfo = { name: "web", ports: [3000] };
+    const svcWith: import("./types.js").ServiceInfo = { name: "db", ports: [5432], lineRange: [10, 20] };
+    expect(svcWithout.lineRange).toBeUndefined();
+    expect(svcWith.lineRange).toEqual([10, 20]);
   });
 
   it("StructuralAnalysis is backward compatible (non-code fields are optional)", () => {

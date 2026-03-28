@@ -1,6 +1,11 @@
 import type { AnalyzerPlugin, StructuralAnalysis, SectionInfo } from "../../types.js";
 import { parse as parseYAML } from "yaml";
 
+/**
+ * Parses YAML configuration files to extract top-level key sections.
+ * Uses the `yaml` library for parsing with a regex fallback for malformed input.
+ * Only extracts top-level keys; does not descend into nested structures.
+ */
 export class YAMLConfigParser implements AnalyzerPlugin {
   name = "yaml-config-parser";
   languages = ["yaml"];
@@ -39,7 +44,8 @@ export class YAMLConfigParser implements AnalyzerPlugin {
           sections[i].lineRange[1] = next ? next.lineRange[0] - 1 : lines.length;
         }
       }
-    } catch {
+    } catch (err) {
+      console.warn(`[yaml-parser] YAML parse failed, falling back to regex extraction: ${err instanceof Error ? err.message : String(err)}`);
       // If YAML parsing fails, fall back to regex
       const lines = content.split("\n");
       for (let i = 0; i < lines.length; i++) {

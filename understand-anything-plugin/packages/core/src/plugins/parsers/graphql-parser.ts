@@ -1,5 +1,10 @@
 import type { AnalyzerPlugin, StructuralAnalysis, DefinitionInfo, EndpointInfo } from "../../types.js";
 
+/**
+ * Parses GraphQL schema files to extract type, input, enum, interface, union, and scalar definitions.
+ * Extracts Query, Mutation, and Subscription endpoints as separate endpoint entries.
+ * Does not handle schema directives, fragments, or inline union members.
+ */
 export class GraphQLParser implements AnalyzerPlugin {
   name = "graphql-parser";
   languages = ["graphql"];

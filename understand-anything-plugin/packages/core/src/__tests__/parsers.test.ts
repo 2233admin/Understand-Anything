@@ -365,6 +365,123 @@ describe("ShellParser", () => {
   });
 });
 
+// --- Edge case tests ---
+
+describe("SQLParser edge cases", () => {
+  const parser = new SQLParser();
+
+  it("handles CREATE TABLE IF NOT EXISTS", () => {
+    const content = "CREATE TABLE IF NOT EXISTS users (id INT);";
+    const result = parser.analyzeFile("schema.sql", content);
+    expect(result.definitions).toBeDefined();
+    expect(result.definitions!).toHaveLength(1);
+    expect(result.definitions![0]).toMatchObject({ name: "users", kind: "table" });
+    expect(result.definitions![0].fields).toContain("id");
+  });
+
+  it("handles CREATE OR REPLACE VIEW", () => {
+    const content = "CREATE OR REPLACE VIEW active AS SELECT * FROM users;";
+    const result = parser.analyzeFile("views.sql", content);
+    expect(result.definitions).toBeDefined();
+    expect(result.definitions!.some(d => d.name === "active" && d.kind === "view")).toBe(true);
+  });
+});
+
+describe("GraphQLParser edge cases", () => {
+  const parser = new GraphQLParser();
+
+  it("extracts input type definitions", () => {
+    const content = "input CreateUserInput {\n  name: String!\n  email: String!\n}";
+    const result = parser.analyzeFile("schema.graphql", content);
+    expect(result.definitions).toBeDefined();
+    const inputDef = result.definitions!.find(d => d.name === "CreateUserInput");
+    expect(inputDef).toBeDefined();
+    expect(inputDef!.kind).toBe("input");
+    expect(inputDef!.fields).toContain("name");
+  });
+});
+
+describe("MakefileParser edge cases", () => {
+  const parser = new MakefileParser();
+
+  it("does not extract .PHONY as a target", () => {
+    const content = ".PHONY: build test\n\nbuild:\n\tgo build\n\ntest:\n\tgo test";
+    const result = parser.analyzeFile("Makefile", content);
+    expect(result.steps).toBeDefined();
+    const targetNames = result.steps!.map(s => s.name);
+    expect(targetNames).not.toContain(".PHONY");
+    expect(targetNames).toContain("build");
+    expect(targetNames).toContain("test");
+  });
+});
+
+describe("ShellParser edge cases", () => {
+  const parser = new ShellParser();
+
+  it("handles function with opening brace on next line", () => {
+    const content = "greet()\n{\n  echo \"Hello\"\n}";
+    const result = parser.analyzeFile("script.sh", content);
+    expect(result.functions).toHaveLength(1);
+    expect(result.functions[0].name).toBe("greet");
+    expect(result.functions[0].lineRange[1]).toBeGreaterThan(result.functions[0].lineRange[0]);
+  });
+});
+
+describe("TOMLParser edge cases", () => {
+  const parser = new TOMLParser();
+
+  it("returns empty sections for empty string", () => {
+    const result = parser.analyzeFile("empty.toml", "");
+    expect(result.sections).toBeDefined();
+    expect(result.sections).toHaveLength(0);
+  });
+
+  it("returns empty sections for garbage text", () => {
+    const result = parser.analyzeFile("garbage.toml", "this is not toml at all\nrandom garbage 123");
+    expect(result.sections).toBeDefined();
+    expect(result.sections).toHaveLength(0);
+  });
+});
+
+describe("DockerfileParser edge cases", () => {
+  const parser = new DockerfileParser();
+
+  it("assigns EXPOSE ports to the correct stage in multi-stage build", () => {
+    const content = "FROM node:22 AS builder\nRUN npm install\n\nFROM node:22-slim AS runner\nCOPY --from=builder /app /app\nEXPOSE 3000 8080\nCMD [\"node\", \"server.js\"]";
+    const result = parser.analyzeFile("Dockerfile", content);
+    expect(result.services).toBeDefined();
+    expect(result.services!).toHaveLength(2);
+    // Ports should be on the runner stage (second stage), not the builder
+    expect(result.services![0].ports).toHaveLength(0); // builder has no EXPOSE
+    expect(result.services![1].ports).toContain(3000);
+    expect(result.services![1].ports).toContain(8080);
+  });
+
+  it("includes lineRange for each stage", () => {
+    const content = "FROM node:22 AS builder\nRUN npm install\n\nFROM node:22-slim AS runner\nCOPY . .\nCMD [\"node\", \"start\"]";
+    const result = parser.analyzeFile("Dockerfile", content);
+    expect(result.services).toBeDefined();
+    expect(result.services!).toHaveLength(2);
+    expect(result.services![0].lineRange).toBeDefined();
+    expect(result.services![0].lineRange![0]).toBe(1);
+    expect(result.services![1].lineRange).toBeDefined();
+    expect(result.services![1].lineRange![0]).toBe(4);
+  });
+});
+
+describe("EnvParser edge cases", () => {
+  const parser = new EnvParser();
+
+  it("does not handle export VAR=value syntax", () => {
+    const content = "export DB_HOST=localhost\nAPI_KEY=secret";
+    const result = parser.analyzeFile(".env", content);
+    // The `export` prefix is not handled — only plain KEY=value is parsed
+    const names = result.definitions!.map(d => d.name);
+    expect(names).toContain("API_KEY");
+    expect(names).not.toContain("DB_HOST");
+  });
+});
+
 describe("registerAllParsers", () => {
   it("registers all 12 parsers with a PluginRegistry", () => {
     const registry = new PluginRegistry();

@@ -21,7 +21,7 @@ import PortalNode from "./PortalNode";
 import type { PortalFlowNode } from "./PortalNode";
 import Breadcrumb from "./Breadcrumb";
 import { useDashboardStore } from "../store";
-import type { KnowledgeGraph } from "@understand-anything/core/types";
+import type { KnowledgeGraph, NodeType } from "@understand-anything/core/types";
 import { useTheme } from "../themes/index.ts";
 import {
   applyDagreLayout,
@@ -43,6 +43,20 @@ const nodeTypes = {
   "layer-cluster": LayerClusterNode,
   portal: PortalNode,
 };
+
+import type { NodeCategory } from "../store";
+
+/**
+ * Maps each NodeType to a filter category. Must be kept in sync with core NodeType.
+ * Unknown types default to "code" with a development warning.
+ */
+const NODE_TYPE_TO_CATEGORY: Record<NodeType, NodeCategory> = {
+  file: "code", function: "code", class: "code", module: "code", concept: "code",
+  config: "config",
+  document: "docs",
+  service: "infra", resource: "infra", pipeline: "infra",
+  table: "data", endpoint: "data", schema: "data",
+} as const;
 
 // ── Helper components that must live inside <ReactFlow> ────────────────
 
@@ -219,15 +233,6 @@ function useLayerDetailTopology() {
 
     const layerNodeIds = new Set(activeLayer.nodeIds);
 
-    // Map node types to filter categories
-    const nodeTypeToCategory: Record<string, string> = {
-      file: "code", function: "code", class: "code", module: "code", concept: "code",
-      config: "config",
-      document: "docs",
-      service: "infra", resource: "infra", pipeline: "infra",
-      table: "data", endpoint: "data", schema: "data",
-    };
-
     // All top-level (file-level) node types that should appear in the graph.
     // This includes the 8 new non-code types plus the original "file" type.
     const fileLevelTypes = new Set([
@@ -245,8 +250,14 @@ function useLayerDetailTopology() {
 
     // Apply node type category filters
     filteredGraphNodes = filteredGraphNodes.filter((n) => {
-      const category = nodeTypeToCategory[n.type] ?? "code";
-      return nodeTypeFilters[category] !== false;
+      const category = NODE_TYPE_TO_CATEGORY[n.type as NodeType];
+      if (!category) {
+        if (import.meta.env.DEV) {
+          console.warn(`[GraphView] Unknown node type "${n.type}" — defaulting to "code" category`);
+        }
+      }
+      const effectiveCategory = category ?? "code";
+      return nodeTypeFilters[effectiveCategory] !== false;
     });
 
     let filteredNodeIds = new Set(filteredGraphNodes.map((n) => n.id));

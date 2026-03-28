@@ -20,7 +20,6 @@
 - `entrypoint.sh` — Docker container entry point script
 - `install.sh` / `setup.sh` — Environment setup scripts
 - `.bashrc` / `.bash_profile` / `.zshrc` — Shell configuration files
-- `Makefile` — Build automation with Make (though technically its own language)
 
 ## Edge Patterns
 

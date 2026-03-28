@@ -88,7 +88,7 @@ Map file extensions to language identifiers:
 | `.cfg`, `.ini`, `.env` | `config` |
 | `Dockerfile` (no extension) | `dockerfile` |
 | `Makefile` (no extension) | `makefile` |
-| `Jenkinsfile` (no extension) | `groovy` |
+| `Jenkinsfile` (no extension) | `jenkinsfile` |
 
 Collect unique languages, sorted alphabetically.
 

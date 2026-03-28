@@ -1,5 +1,10 @@
 import type { AnalyzerPlugin, StructuralAnalysis, DefinitionInfo } from "../../types.js";
 
+/**
+ * Parses SQL files to extract table, view, and index definitions.
+ * Handles CREATE TABLE, CREATE VIEW, CREATE INDEX with IF NOT EXISTS and OR REPLACE variants.
+ * Does not handle stored procedures, triggers, or schema-qualified names (e.g., public.users).
+ */
 export class SQLParser implements AnalyzerPlugin {
   name = "sql-parser";
   languages = ["sql"];

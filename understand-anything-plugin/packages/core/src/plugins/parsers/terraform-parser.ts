@@ -1,5 +1,10 @@
 import type { AnalyzerPlugin, StructuralAnalysis, ResourceInfo, DefinitionInfo } from "../../types.js";
 
+/**
+ * Parses Terraform (.tf) files to extract resource, data, module, variable, and output blocks.
+ * Handles HCL block syntax with brace-matching for line range computation.
+ * Does not handle provider blocks, locals, or terraform configuration blocks.
+ */
 export class TerraformParser implements AnalyzerPlugin {
   name = "terraform-parser";
   languages = ["terraform"];
@@ -116,6 +121,9 @@ export class TerraformParser implements AnalyzerPlugin {
         depth--;
         if (depth === 0) return i;
       }
+    }
+    if (depth !== 0) {
+      console.warn(`[terraform-parser] Unbalanced braces detected (depth=${depth}), results may be incomplete`);
     }
     return content.length;
   }

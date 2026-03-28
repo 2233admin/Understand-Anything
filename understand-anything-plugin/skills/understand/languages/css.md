@@ -25,9 +25,9 @@
 
 ## Edge Patterns
 
-- CSS files `configures` the visual appearance of HTML or component files that import them
+- CSS files are `related` to the HTML or component files that import them for styling
 - SCSS partial files (`_*.scss`) are `depends_on` by the main stylesheet that `@use`s them
-- CSS variable definition files `configures` all stylesheets that reference those variables
+- CSS variable definition files are `related` to all stylesheets that reference those variables
 - CSS Modules are `related` to the component files that import them
 
 ## Summary Style

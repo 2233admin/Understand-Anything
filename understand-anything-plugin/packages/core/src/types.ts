@@ -1,19 +1,23 @@
-// Edge types (26 total in 6 categories: Structural, Behavioral, Data flow, Dependencies, Semantic, Infrastructure)
+// Node types (13 total: 5 code + 8 non-code)
+export type NodeType =
+  | "file" | "function" | "class" | "module" | "concept"
+  | "config" | "document" | "service" | "table" | "endpoint"
+  | "pipeline" | "schema" | "resource";
+
+// Edge types (26 total in 6 categories: Structural, Behavioral, Data flow, Dependencies, Semantic, Infrastructure/Schema)
 export type EdgeType =
   | "imports" | "exports" | "contains" | "inherits" | "implements"  // Structural
   | "calls" | "subscribes" | "publishes" | "middleware"              // Behavioral
   | "reads_from" | "writes_to" | "transforms" | "validates"         // Data flow
   | "depends_on" | "tested_by" | "configures"                       // Dependencies
   | "related" | "similar_to"                                         // Semantic
-  | "deploys" | "serves" | "migrates" | "documents"                 // Infrastructure
-  | "provisions" | "routes" | "defines_schema" | "triggers";        // Infrastructure
+  | "deploys" | "serves" | "provisions" | "triggers"                // Infrastructure
+  | "migrates" | "documents" | "routes" | "defines_schema";         // Schema/Data
 
 // GraphNode with 13 types: 5 code + 8 non-code
 export interface GraphNode {
   id: string;
-  type: "file" | "function" | "class" | "module" | "concept"
-    | "config" | "document" | "service" | "table" | "endpoint"
-    | "pipeline" | "schema" | "resource";
+  type: NodeType;
   name: string;
   filePath?: string;
   lineRange?: [number, number];
@@ -99,7 +103,8 @@ export interface SectionInfo {
 
 export interface DefinitionInfo {
   name: string;
-  kind: string; // "table", "message", "type", "schema"
+  /** Parser-reported definition kind. Known values: "table", "view", "index", "message", "enum", "type", "input", "interface", "union", "scalar", "variable", "output", "resource", "data", "section", "target", "stage" */
+  kind: string;
   lineRange: [number, number];
   fields: string[];
 }
@@ -108,6 +113,7 @@ export interface ServiceInfo {
   name: string;
   image?: string;
   ports: number[];
+  lineRange?: [number, number];
 }
 
 export interface EndpointInfo {

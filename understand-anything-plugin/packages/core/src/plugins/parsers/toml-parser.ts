@@ -1,5 +1,10 @@
 import type { AnalyzerPlugin, StructuralAnalysis, SectionInfo } from "../../types.js";
 
+/**
+ * Parses TOML files to extract section headers ([section] and [[array-of-tables]]).
+ * Computes section nesting level from dotted key paths (e.g., [tool.poetry] = level 2).
+ * Does not parse individual key-value pairs within sections.
+ */
 export class TOMLParser implements AnalyzerPlugin {
   name = "toml-parser";
   languages = ["toml"];

@@ -1,5 +1,10 @@
 import type { AnalyzerPlugin, StructuralAnalysis, DefinitionInfo, EndpointInfo } from "../../types.js";
 
+/**
+ * Parses Protocol Buffer (.proto) files to extract message, enum, and service definitions.
+ * Extracts message fields, enum values, and service RPC method endpoints.
+ * Does not handle nested message types, oneof fields, or proto2 extensions.
+ */
 export class ProtobufParser implements AnalyzerPlugin {
   name = "protobuf-parser";
   languages = ["protobuf"];
@@ -127,6 +132,9 @@ export class ProtobufParser implements AnalyzerPlugin {
         depth--;
         if (depth === 0) return i;
       }
+    }
+    if (depth !== 0) {
+      console.warn(`[protobuf-parser] Unbalanced braces detected (depth=${depth}), results may be incomplete`);
     }
     return content.length;
   }

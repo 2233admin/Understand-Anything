@@ -1,5 +1,10 @@
 import type { AnalyzerPlugin, StructuralAnalysis, ReferenceResolution } from "../../types.js";
 
+/**
+ * Parses shell scripts (.sh, .bash) to extract function definitions and source references.
+ * Handles both `name() {` and `function name {` styles, including brace on next line.
+ * Does not extract variable declarations, aliases, or trap handlers.
+ */
 export class ShellParser implements AnalyzerPlugin {
   name = "shell-parser";
   languages = ["shell"];
@@ -42,11 +47,12 @@ export class ShellParser implements AnalyzerPlugin {
                     lines[i].match(/^function\s+(\w+)\s*\{?/);
       if (match) {
         const name = match[1];
-        // Find closing brace
+        // Find closing brace (handle brace on same line or next line)
         let endLine = i;
-        if (lines[i].includes("{")) {
+        if (lines[i].includes("{") || (i + 1 < lines.length && lines[i + 1]?.trim() === "{")) {
+          const startBraceLine = lines[i].includes("{") ? i : i + 1;
           let depth = 0;
-          for (let j = i; j < lines.length; j++) {
+          for (let j = startBraceLine; j < lines.length; j++) {
             for (const ch of lines[j]) {
               if (ch === "{") depth++;
               if (ch === "}") depth--;

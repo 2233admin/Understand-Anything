@@ -1,5 +1,10 @@
 import type { AnalyzerPlugin, StructuralAnalysis, SectionInfo, ReferenceResolution } from "../../types.js";
 
+/**
+ * Parses JSON configuration files to extract top-level key sections and $ref references.
+ * Handles package.json, tsconfig.json, JSON Schema, and OpenAPI spec files.
+ * Does not descend into nested object structures beyond top-level keys.
+ */
 export class JSONConfigParser implements AnalyzerPlugin {
   name = "json-config-parser";
   languages = ["json"];
@@ -57,8 +62,8 @@ export class JSONConfigParser implements AnalyzerPlugin {
           sections[i].lineRange[1] = next ? next.lineRange[0] - 1 : lines.length;
         }
       }
-    } catch {
-      // JSON parse failed — skip
+    } catch (err) {
+      console.warn(`[json-parser] Failed to parse JSON: ${err instanceof Error ? err.message : String(err)}`);
     }
     return sections;
   }

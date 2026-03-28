@@ -7,8 +7,8 @@ export const EdgeTypeSchema = z.enum([
   "reads_from", "writes_to", "transforms", "validates",        // Data flow
   "depends_on", "tested_by", "configures",                     // Dependencies
   "related", "similar_to",                                      // Semantic
-  "deploys", "serves", "migrates", "documents",                // Infrastructure
-  "provisions", "routes", "defines_schema", "triggers",        // Infrastructure
+  "deploys", "serves", "provisions", "triggers",               // Infrastructure
+  "migrates", "documents", "routes", "defines_schema",         // Schema/Data
 ]);
 
 // Aliases that LLMs commonly generate instead of canonical node types

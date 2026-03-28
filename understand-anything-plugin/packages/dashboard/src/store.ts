@@ -9,6 +9,8 @@ import type {
 export type Persona = "non-technical" | "junior" | "experienced";
 export type NavigationLevel = "overview" | "layer-detail";
 
+/** Categories used for node type filter toggles. Single source of truth for NodeCategory. */
+export type NodeCategory = "code" | "config" | "docs" | "infra" | "data";
 
 /** Find which layer a node belongs to. Returns layerId or null. */
 function findNodeLayer(graph: KnowledgeGraph, nodeId: string): string | null {
@@ -54,8 +56,8 @@ interface DashboardStore {
   nodeHistory: string[];
 
   // Node type category filters
-  nodeTypeFilters: Record<string, boolean>;
-  toggleNodeTypeFilter: (category: string) => void;
+  nodeTypeFilters: Record<NodeCategory, boolean>;
+  toggleNodeTypeFilter: (category: NodeCategory) => void;
 
   setGraph: (graph: KnowledgeGraph) => void;
   selectNode: (nodeId: string | null) => void;

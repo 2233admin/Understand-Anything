@@ -1,5 +1,10 @@
 import type { AnalyzerPlugin, StructuralAnalysis, ReferenceResolution, SectionInfo } from "../../types.js";
 
+/**
+ * Parses Markdown files to extract heading sections and local file/image references.
+ * Supports ATX-style headings (# through ######) with line range computation.
+ * Does not extract code blocks, front matter fields, or external URL references.
+ */
 export class MarkdownParser implements AnalyzerPlugin {
   name = "markdown-parser";
   languages = ["markdown"];

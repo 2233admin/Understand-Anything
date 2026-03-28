@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { LanguageRegistry } from "../languages/language-registry.js";
+import { StrictLanguageConfigSchema } from "../languages/types.js";
 import { typescriptConfig } from "../languages/configs/typescript.js";
 import { pythonConfig } from "../languages/configs/python.js";
 
@@ -138,6 +139,57 @@ describe("LanguageRegistry", () => {
       expect(registry.getForFile(".env")?.id).toBe("env");
       expect(registry.getForFile(".env.local")?.id).toBe("env");
       expect(registry.getForFile(".env.production")?.id).toBe("env");
+    });
+  });
+
+  describe("StrictLanguageConfigSchema refinement", () => {
+    it("rejects configs with empty extensions AND no filenames", () => {
+      const result = StrictLanguageConfigSchema.safeParse({
+        id: "empty-lang",
+        displayName: "Empty",
+        extensions: [],
+        concepts: ["nothing"],
+        filePatterns: { entryPoints: [], barrels: [], tests: [], config: [] },
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues[0].message).toContain("at least one extension or filename");
+      }
+    });
+
+    it("rejects configs with empty extensions AND empty filenames", () => {
+      const result = StrictLanguageConfigSchema.safeParse({
+        id: "empty-lang",
+        displayName: "Empty",
+        extensions: [],
+        filenames: [],
+        concepts: ["nothing"],
+        filePatterns: { entryPoints: [], barrels: [], tests: [], config: [] },
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it("accepts configs with extensions but no filenames", () => {
+      const result = StrictLanguageConfigSchema.safeParse({
+        id: "ext-lang",
+        displayName: "ExtLang",
+        extensions: [".ext"],
+        concepts: ["something"],
+        filePatterns: { entryPoints: [], barrels: [], tests: [], config: [] },
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("accepts configs with filenames but empty extensions", () => {
+      const result = StrictLanguageConfigSchema.safeParse({
+        id: "filename-lang",
+        displayName: "FilenameLang",
+        extensions: [],
+        filenames: ["Specialfile"],
+        concepts: ["something"],
+        filePatterns: { entryPoints: [], barrels: [], tests: [], config: [] },
+      });
+      expect(result.success).toBe(true);
     });
   });
 });
