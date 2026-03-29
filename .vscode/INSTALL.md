@@ -14,65 +14,69 @@ git clone https://github.com/Lum1104/Understand-Anything.git
 code Understand-Anything
 ```
 
-Skills will appear in the **Configure Skills** menu inside GitHub Copilot Chat.
+Skills will appear when you type `/` in GitHub Copilot Chat.
 
 ## Option B — Personal skills (available across all projects)
 
-1. **Clone the repository:**
+1. **Clone the repository** (to any location you prefer):
    ```bash
-   git clone https://github.com/Lum1104/Understand-Anything.git ~/.copilot/understand-anything
+   git clone https://github.com/Lum1104/Understand-Anything.git ~/understand-anything
    ```
 
-2. **Create the skills symlink:**
+2. **Create a symlink for each skill** into `~/.copilot/skills/`:
    ```bash
    mkdir -p ~/.copilot/skills
-   ln -s ~/.copilot/understand-anything/understand-anything-plugin/skills ~/.copilot/skills/understand-anything
+   SKILLS_DIR=~/understand-anything/understand-anything-plugin/skills
+   for skill in "$SKILLS_DIR"/*/; do
+     ln -s "$skill" ~/.copilot/skills/$(basename "$skill")
+   done
    # Universal plugin root symlink — lets the dashboard skill find packages/dashboard/
    # Skip if already exists (e.g. another platform was installed first)
-   [ -e ~/.understand-anything-plugin ] || [ -L ~/.understand-anything-plugin ] || ln -s ~/.copilot/understand-anything/understand-anything-plugin ~/.understand-anything-plugin
+   [ -e ~/.understand-anything-plugin ] || [ -L ~/.understand-anything-plugin ] || \
+     ln -s ~/understand-anything/understand-anything-plugin ~/.understand-anything-plugin
    ```
 
    **Windows (PowerShell):**
    ```powershell
    New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.copilot\skills"
-   cmd /c mklink /J "$env:USERPROFILE\.copilot\skills\understand-anything" "$env:USERPROFILE\.copilot\understand-anything\understand-anything-plugin\skills"
-   cmd /c mklink /J "$env:USERPROFILE\.understand-anything-plugin" "$env:USERPROFILE\.copilot\understand-anything\understand-anything-plugin"
+   $skillsDir = "$env:USERPROFILE\understand-anything\understand-anything-plugin\skills"
+   Get-ChildItem $skillsDir -Directory | ForEach-Object {
+     cmd /c mklink /J "$env:USERPROFILE\.copilot\skills\$($_.Name)" $_.FullName
+   }
+   cmd /c mklink /J "$env:USERPROFILE\.understand-anything-plugin" "$env:USERPROFILE\understand-anything\understand-anything-plugin"
    ```
 
-3. **Restart VS Code** so GitHub Copilot can discover the skills.
+3. **Reload VS Code** (`Cmd+Shift+P` → `Developer: Reload Window`) so GitHub Copilot discovers the skills.
 
 ## Verify
 
-Open GitHub Copilot Chat → click **Configure Skills** — you should see the `understand-*` skills listed.
+Type `/` in GitHub Copilot Chat — you should see all six skills listed:
+
+- `understand` — build the knowledge graph
+- `understand-chat` — ask questions about the codebase
+- `understand-dashboard` — open the interactive dashboard
+- `understand-diff` — analyze impact of current changes
+- `understand-explain` — deep-dive into a file or function
+- `understand-onboard` — generate an onboarding guide
 
 ## Usage
 
-Skills activate automatically when relevant. You can also invoke them directly in Copilot Chat:
-
-- "Run the understand skill to analyze this codebase"
-- "Use understand-dashboard to view the architecture map"
-- "Use understand-chat to answer a question about the graph"
-
-Or use the equivalent slash commands if you have Claude Code installed alongside:
-- `/understand` — build the knowledge graph
-- `/understand-dashboard` — open the interactive dashboard
-- `/understand-chat <query>` — ask questions about the codebase
-- `/understand-diff` — analyze impact of current changes
-- `/understand-explain <path>` — deep-dive into a file or function
-- `/understand-onboard` — generate an onboarding guide
+Skills activate automatically when relevant. You can also invoke them directly by typing `/` in Copilot Chat and selecting a skill.
 
 ## Updating
 
 ```bash
-cd ~/.copilot/understand-anything && git pull
+cd ~/understand-anything && git pull
 ```
 
-Skills update instantly through the symlink.
+Skills update instantly through the symlinks.
 
 ## Uninstalling
 
 ```bash
-rm ~/.copilot/skills/understand-anything
+for skill in understand understand-chat understand-dashboard understand-diff understand-explain understand-onboard; do
+  rm ~/.copilot/skills/$skill
+done
 rm ~/.understand-anything-plugin
-rm -rf ~/.copilot/understand-anything
+rm -rf ~/understand-anything
 ```
